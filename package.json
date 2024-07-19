@@ -1,0 +1,27 @@
+{
+  "name": "dogpay---api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "tsx watch src/server.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/bcrypt": "^5.0.2",
+    "prisma": "^5.15.0",
+    "tsx": "^4.15.1",
+    "typescript": "^5.4.5"
+  },
+  "dependencies": {
+    "@fastify/jwt": "^8.0.1",
+    "@prisma/client": "^5.15.0",
+    "bcrypt": "^5.1.1",
+    "fastify": "^4.28.1",
+    "fastify-jwt": "^4.2.0"
+  }
+}
