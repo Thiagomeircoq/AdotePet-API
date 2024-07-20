@@ -20,7 +20,7 @@ model tbpersons {
   cpf           String    @unique
   first_name    String
   last_name     String
-  date_of_birth DateTime?
+  date_of_birth String
   phone_number  String    @unique
   created_at    DateTime  @default(now())
   updated_at    DateTime  @updatedAt
