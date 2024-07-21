@@ -1,33 +1,42 @@
 import { HttpError } from "../errors/HttpError";
 import { PersonCreate, PersonRepository, PersonUpdate } from "../interface/person.interface";
+import { UserRepository } from "../interface/user.interface";
 import { PersonRepositoryPrisma } from "../repositories/person.repository";
+import { UserRepositoryPrisma } from "../repositories/user.repository";
 
-class PersonUserCase {
+class PersonUseCase {
     private personRepository: PersonRepository
+    private userRepository: UserRepository
+
     constructor() {
         this.personRepository = new PersonRepositoryPrisma;
+        this.userRepository = new UserRepositoryPrisma;
     }
 
-    async create(data: PersonCreate) {
-        const cpfExists = await this.personRepository.findByCpf(data.cpf);
+    async create(data: PersonCreate, userId: string) {
+        const { cpf, phone_number, first_name, last_name, date_of_birth } = data;
 
+        const cpfExists = await this.personRepository.findByCpf(cpf);
         if (cpfExists)
-            throw new HttpError({ code: 409, message: `CPF ${data.cpf} already exists.` });
+            throw new HttpError({ code: 409, message: `CPF ${cpf} already exists.` });
 
         const phoneNumberExists = await this.personRepository.findByPhoneNumber(data.phone_number);
-
         if (phoneNumberExists)
             throw new HttpError({ code: 409, message: `Phone number ${data.phone_number} already exists.` });
 
-        const product = await this.personRepository.create({
-            cpf: data.cpf,
-            first_name: data.first_name,
-            last_name: data.last_name,
-            date_of_birth: data.date_of_birth || undefined,
-            phone_number: data.phone_number
-        });
+        const userAssociation = await this.userRepository.findById(userId);
+        if (userAssociation && userAssociation.person_id)
+            throw new HttpError({ code: 409, message: `User already has a person associated` });
 
-        return product;
+        const person = await this.personRepository.create({
+            cpf,
+            first_name,
+            last_name,
+            date_of_birth: date_of_birth || undefined,
+            phone_number
+        }, userId);
+
+        return person;
     }
 
     async findById(id: string) {
@@ -48,8 +57,8 @@ class PersonUserCase {
     }
 
     async update(data: PersonUpdate) {
-        const personExists = await this.findById(data.id);
-    
+        await this.findById(data.id);
+
         const person = await this.personRepository.update(data);
 
         return person;
@@ -58,4 +67,4 @@ class PersonUserCase {
 
 }
 
-export { PersonUserCase };
+export { PersonUseCase };

@@ -32,12 +32,12 @@ model tbpersons {
 model tbusers {
   id              String       @id @default(uuid())
   username        String       @unique
-  email           String
+  email           String       @unique
   password        String
-  person_id       String?
+  person_id       String?      @unique
   created_at      DateTime     @default(now())
   updated_at      DateTime     @updatedAt
-  tbpersons       tbpersons?   @relation(fields: [person_id], references: [id])
+  tbpersons       tbpersons?   @relation(fields: [person_id], references: [id], onDelete: Cascade)
   tbaccounts      tbaccounts[]
   tbcontacts      tbcontacts[] @relation("UserContacts")
   contact_tbusers tbcontacts[] @relation("ContactRelation")

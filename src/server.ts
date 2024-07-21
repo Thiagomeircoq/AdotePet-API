@@ -2,17 +2,23 @@ import fastify, { FastifyInstance } from "fastify";
 import { personRoutes } from "./routes/person.routes";
 import jwtAuth from './auth';
 import { HttpError } from "./errors/HttpError";
+import { authRoutes } from "./routes/auth.routes";
+import { userRoutes } from "./routes/user.routes";
 
 const app: FastifyInstance = fastify({ logger: true });
 
-// app.register(jwtAuth);
-
-// app.register(productRoutes, {
-//     prefix: "/login",
-// });
+app.register(jwtAuth);
 
 app.register(personRoutes, {
     prefix: "/person",
+});
+
+app.register(authRoutes, {
+    prefix: "/auth",
+});
+
+app.register(userRoutes, {
+    prefix: "/user",
 });
 
 app.setErrorHandler((error, request, reply) => {

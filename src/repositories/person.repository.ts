@@ -3,18 +3,26 @@ import { Person, PersonCreate, PersonRepository, PersonUpdate } from "../interfa
 
 class PersonRepositoryPrisma implements PersonRepository {
 
-    async create(data: PersonCreate): Promise<Person> {
-        const result = await prisma.tbpersons.create({
-            data: {
-                cpf: data.cpf,
-                first_name: data.first_name,
-                last_name: data.last_name,
-                date_of_birth: data.date_of_birth || undefined,
-                phone_number: data.phone_number
-            },
+    async create(data: PersonCreate, userId: string): Promise<Person> {
+        const person = await prisma.$transaction(async (prisma) => {
+            const person = await prisma.tbpersons.create({
+                data: {
+                    cpf: data.cpf,
+                    first_name: data.first_name,
+                    last_name: data.last_name,
+                    date_of_birth: data.date_of_birth || '',
+                    phone_number: data.phone_number,
+                },
+            });
+    
+            await prisma.tbusers.update({
+                where: { id: userId },
+                data: { person_id: person.id },
+            });
+            return person;
         });
 
-        return result;
+        return person;
     }
 
     async findById(id: string): Promise<Person | null> {

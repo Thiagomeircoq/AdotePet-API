@@ -3,7 +3,7 @@ export interface Person {
     cpf: string;
     first_name: string;
     last_name: string;
-    date_of_birth?: Date | null;
+    date_of_birth?: string;
     phone_number: string;
     created_at: Date;
     updated_at: Date;
@@ -22,7 +22,7 @@ export interface PersonUpdate extends PersonCreate {
 }
 
 export interface PersonRepository {
-   create(data: PersonCreate): Promise<Person>;
+   create(data: PersonCreate, userId: string): Promise<Person>;
    findByCpf(cpf: string): Promise<Person | null>;
    findByPhoneNumber(phone_number: string): Promise<Person | null>;
    findById(id: string): Promise<Person | null>;
