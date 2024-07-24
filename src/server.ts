@@ -1,11 +1,18 @@
-import fastify, { FastifyInstance } from "fastify";
+import Fastify, { FastifyInstance } from "fastify";
 import { personRoutes } from "./routes/person.routes";
 import jwtAuth from './auth';
+import cors from '@fastify/cors'
 import { HttpError } from "./errors/HttpError";
 import { authRoutes } from "./routes/auth.routes";
 import { userRoutes } from "./routes/user.routes";
 
-const app: FastifyInstance = fastify({ logger: true });
+const app: FastifyInstance = Fastify({ logger: true });
+
+app.register(cors, {
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+})
 
 app.register(jwtAuth);
 
