@@ -22,9 +22,11 @@ export async function authRoutes(fastify: FastifyInstance) {
             const dataBody = req.body;
 
             try {
-                const data = await authUserCase.create(dataBody);
-                return reply.status(201).send(data);
+                const user = await authUserCase.create(dataBody);
 
+                const token = fastify.jwt.sign({ id: user.id, email: user.email });
+
+                return reply.status(201).send({ token });
             } catch (error) {
                 if (error instanceof HttpError) {
                     return reply.status(error.code).send({ message: error.message });
