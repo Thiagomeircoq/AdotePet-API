@@ -27,7 +27,10 @@ export async function authRoutes(fastify: FastifyInstance) {
             try {
                 const user = await authUserCase.create(dataBody);
 
-                const token = fastify.jwt.sign({ id: user.id, email: user.email });
+                const token = fastify.jwt.sign(
+                    { id: user.id, email: user.email },
+                    { expiresIn: '1m' }
+                );
 
                 return reply.status(201).send({ token });
             } catch (error) {
@@ -59,7 +62,11 @@ export async function authRoutes(fastify: FastifyInstance) {
                 const user = await authUserCase.verifyCredentials(dataBody);
 
                 if (user) {
-                    const token = fastify.jwt.sign({ id: user.id, email: user.email });
+                    const token = fastify.jwt.sign(
+                        { id: user.id, email: user.email },
+                        { expiresIn: '1m' }
+                    );
+
                     return reply.send({ token });
                 }
 
