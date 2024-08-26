@@ -1,4 +1,5 @@
 import { prisma } from "../database/prisma-client";
+import { HttpError } from "../errors/HttpError";
 import { Person, PersonCreate, PersonRepository, PersonUpdate } from "../interface/person.interface";
 
 class PersonRepositoryPrisma implements PersonRepository {
@@ -14,6 +15,14 @@ class PersonRepositoryPrisma implements PersonRepository {
                     phone_number: data.phone_number,
                 },
             });
+    
+            const user = await prisma.tbusers.findUnique({
+                where: { id: userId },
+            });
+    
+            if (!user) {
+                throw new HttpError({ code: 404, message: `User with ID ${userId} not found.` });
+            }
     
             await prisma.tbusers.update({
                 where: { id: userId },
@@ -35,20 +44,22 @@ class PersonRepositoryPrisma implements PersonRepository {
         return result || null;
     }
 
-    async findByCpf(cpf: string): Promise<Person | null> {
-        const result = await prisma.tbpersons.findUnique({
+    async findByCpf(cpf: string, id?: string): Promise<Person | null> {
+        const result = await prisma.tbpersons.findFirst({
             where: {
-                cpf: cpf
+                cpf: cpf,
+                AND: id ? { id: { not: id } } : {},
             },
         });
 
         return result || null;
     }
 
-    async findByPhoneNumber(phone_number: string): Promise<Person | null> {
-        const result = await prisma.tbpersons.findUnique({
+    async findByPhoneNumber(phone_number: string, id?: string): Promise<Person | null> {
+        const result = await prisma.tbpersons.findFirst({
             where: {
-                phone_number: phone_number
+                phone_number: phone_number,
+                AND: id ? { id: { not: id } } : {},
             },
         });
 

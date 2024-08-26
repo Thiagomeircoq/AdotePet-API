@@ -59,6 +59,14 @@ class PersonUseCase {
     async update(data: PersonUpdate) {
         await this.findById(data.id);
 
+        const cpfExists = await this.personRepository.findByCpf(data.cpf, data.id);
+        if (cpfExists)
+            throw new HttpError({ code: 409, message: `CPF ${data.cpf} already exists.` });
+
+        const phoneNumberExists = await this.personRepository.findByPhoneNumber(data.phone_number, data.id);
+        if (phoneNumberExists)
+            throw new HttpError({ code: 409, message: `Phone number ${data.phone_number} already exists.` });
+
         const person = await this.personRepository.update(data);
 
         return person;

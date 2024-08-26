@@ -23,8 +23,8 @@ export interface PersonUpdate extends PersonCreate {
 
 export interface PersonRepository {
    create(data: PersonCreate, userId: string): Promise<Person>;
-   findByCpf(cpf: string): Promise<Person | null>;
-   findByPhoneNumber(phone_number: string): Promise<Person | null>;
+   findByCpf(cpf: string, id?: string): Promise<Person | null>;
+   findByPhoneNumber(phone_number: string, id?: string): Promise<Person | null>;
    findById(id: string): Promise<Person | null>;
    delete(id: string): Promise<void>;
    update(data: PersonUpdate): Promise<Person>;
