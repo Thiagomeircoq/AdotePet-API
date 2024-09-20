@@ -1,7 +1,17 @@
-FROM postgres:latest
+FROM node:18-alpine
 
-ENV POSTGRES_USER=postgres
-ENV POSTGRES_PASSWORD=123
-ENV POSTGRES_DB=dogpay
+WORKDIR /app
 
-EXPOSE 5435
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+RUN npm install -g prisma
+
+RUN npx prisma generate
+
+EXPOSE 3100
+
+CMD ["npm", "run", "dev"]

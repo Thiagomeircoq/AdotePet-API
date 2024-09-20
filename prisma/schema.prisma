@@ -4,97 +4,24 @@
 // Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
 // Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
 
-generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["multiSchema"]
-}
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  schemas  = ["register", "auth", "financial", "social"]
 }
 
-model tbpersons {
-  id            String    @id @default(uuid())
-  cpf           String    @unique
-  first_name    String
-  last_name     String
-  date_of_birth String
-  phone_number  String    @unique
-  created_at    DateTime  @default(now())
-  updated_at    DateTime  @updatedAt
-  tbusers       tbusers[]
-
-  @@schema("register")
+generator client {
+  provider = "prisma-client-js"
 }
 
-model tbusers {
-  id              String       @id @default(uuid())
-  username        String       @unique
-  email           String       @unique
-  password        String
-  person_id       String?      @unique
-  created_at      DateTime     @default(now())
-  updated_at      DateTime     @updatedAt
-  tbpersons       tbpersons?   @relation(fields: [person_id], references: [id], onDelete: Cascade)
-  tbaccounts      tbaccounts[]
-  tbcontacts      tbcontacts[] @relation("UserContacts")
-  contact_tbusers tbcontacts[] @relation("ContactRelation")
-
-  @@schema("auth")
-}
-
-model tbaccounts {
-  id             String      @id @default(uuid())
-  user_id        String
-  account_number String      @unique
-  account_type   String
-  created_at     DateTime    @default(now())
-  updated_at     DateTime    @updatedAt
-  tbusers        tbusers     @relation(fields: [user_id], references: [id])
-  tbwallets      tbwallets[]
-
-  @@schema("auth")
-}
-
-model tbcontacts {
-  id              String   @id @default(uuid())
-  user_id         String
-  contact_user_id String
-  created_at      DateTime @default(now())
-  updated_at      DateTime @updatedAt
-  tbusers         tbusers  @relation("UserContacts", fields: [user_id], references: [id])
-  contact_tbusers tbusers  @relation("ContactRelation", fields: [contact_user_id], references: [id])
-
-  @@schema("social")
-}
-
-model tbtransactions {
-  id                 String    @id @default(uuid())
-  sender_wallet_id   String
-  receiver_wallet_id String
-  amount             Decimal   @db.Decimal(15, 2)
-  transaction_type   String
-  status             String
-  created_at         DateTime  @default(now())
-  updated_at         DateTime  @updatedAt
-  sender_wallet      tbwallets @relation("SenderWallet", fields: [sender_wallet_id], references: [id])
-  receiver_wallet    tbwallets @relation("ReceiverWallet", fields: [receiver_wallet_id], references: [id])
-
-  @@schema("financial")
-}
-
-model tbwallets {
-  id                    String           @id @default(uuid())
-  account_id            String
-  balance               Decimal          @default(0.00) @db.Decimal(15, 2)
-  currency              String           @default("BRL")
-  created_at            DateTime         @default(now())
-  updated_at            DateTime         @updatedAt
-  tbaccounts            tbaccounts       @relation(fields: [account_id], references: [id])
-  sender_transactions   tbtransactions[] @relation("SenderWallet")
-  receiver_transactions tbtransactions[] @relation("ReceiverWallet")
-
-  @@schema("financial")
+// Tabela principal de pets
+model tbpets {
+  id          Int          @id @default(autoincrement())
+  name        String       @db.VarChar(50)
+  species     Int
+  color       Int
+  size        Int
+  age         Int
+  gender      String       @db.Char(1)
+  created_at  DateTime     @default(now())
+  updated_at  DateTime     @updatedAt
 }
