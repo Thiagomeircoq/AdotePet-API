@@ -1,9 +1,6 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
-// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
-
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
@@ -13,15 +10,45 @@ generator client {
   provider = "prisma-client-js"
 }
 
-// Tabela principal de pets
+enum Gender {
+  M
+  F
+}
+
+enum Color {
+  BRANCO
+  PRETO
+  MARROM
+  CINZA
+  DOURADO
+  BEGE
+  AMARELO
+  AZUL
+  VERMELHO
+  VERDE
+}
+
+enum Size {
+  FILHOTE
+  PEQUENO
+  MEDIO
+  GRANDE
+}
+
 model tbpets {
-  id          Int          @id @default(autoincrement())
-  name        String       @db.VarChar(50)
-  species     Int
-  color       Int
-  size        Int
-  age         Int
-  gender      String       @db.Char(1)
-  created_at  DateTime     @default(now())
-  updated_at  DateTime     @updatedAt
+  id         Int       @id @default(autoincrement())
+  name       String    @db.VarChar(50)
+  species_id Int
+  color      Color
+  size       Size
+  age        Int
+  gender     Gender
+  created_at DateTime  @default(now())
+  updated_at DateTime  @updatedAt
+  species    tbspecies @relation(fields: [species_id], references: [id])
+}
+model tbspecies {
+  id   Int      @id @default(autoincrement())
+  name String   @db.VarChar(50)
+  pets tbpets[]
 }

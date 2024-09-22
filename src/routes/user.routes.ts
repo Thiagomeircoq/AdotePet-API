@@ -3,7 +3,7 @@ import { HttpError } from "../errors/HttpError";
 import { UpdatePassword, UserCreate } from "../interface/user.interface";
 import { authMiddleware } from "../middlewares/auth.middleware";
 import { UserUseCase } from "../usercases/user.usecase";
-import { PasswordUpdate } from "../schemas/user.schema";
+import { PasswordUpdate } from "../schemas/pet/pet.schema";
 import { formatZodError } from "../errors/ZoodError";
 
 export async function userRoutes(fastify: FastifyInstance) {

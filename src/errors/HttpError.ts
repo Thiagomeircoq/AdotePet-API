@@ -6,17 +6,17 @@ export class HttpError<
     TMessage extends HttpErrorMessage<TCode>,
 > extends CustomError {
     code: TCode;
-    private _message: TMessage;
+    private _defaultMessage: TMessage;
     private _customMessage?: string;
 
     constructor({ code, message }: { code: TCode; message?: string }) {
-        super();
-        this._message = httpErrorMessages[code] as TMessage;
+        super(message);
+        this._defaultMessage = httpErrorMessages[code] as TMessage;
         this._customMessage = message;
         this.code = code;
     }
 
     get message() {
-        return this._customMessage ?? this._message;
+        return this._customMessage ?? this._defaultMessage;
     }
 }
