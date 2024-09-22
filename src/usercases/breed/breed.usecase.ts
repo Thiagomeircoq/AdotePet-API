@@ -45,7 +45,10 @@ class BreedUseCase {
 
         const breeds = await this.breedRepository.findAllBySpecieId(specie_id);
 
-        return specie;
+        if (!breeds)
+            throw new HttpError({ code: 404, message: 'No Breeds found for this Specie.' });
+
+        return breeds;
     }
 
     async create(data: CreateBreedDTO) {
@@ -72,14 +75,14 @@ class BreedUseCase {
 
         await this.findById(id);
 
-        const specie = await this.speciesRepository.findById(specie_id);
+        const speciesExists = await this.speciesRepository.findById(specie_id);
 
-        if (!specie)
+        if (!speciesExists)
             throw new HttpError({ code: 404, message: `Specie with ID ${specie_id} not found.` });
 
-        const person = await this.breedRepository.update(data);
+        const breed = await this.breedRepository.update(data);
 
-        return person;
+        return breed;
     }
 
 }

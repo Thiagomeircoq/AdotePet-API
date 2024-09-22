@@ -24,27 +24,32 @@ export async function petRoutes(fastify: FastifyInstance) {
                     description: 'Pet encontrado',
                     type: 'object',
                     properties: {
-                        id: { type: 'number' },
+                        id: { type: 'string' },
                         name: { type: 'string' },
-                        species_id: { type: 'number' },
-                        breed_id: { type: 'number' },
                         color: { type: 'string' },
                         size: { type: 'string' },
                         age: { type: 'number' },
                         gender: { type: 'string' },
-                        created_at: { type: 'string', format: 'date-time' },
-                        updated_at: { type: 'string', format: 'date-time' },
                         species: {
                             type: 'object',
                             properties: {
-                                id: { type: 'number' },
+                                id: { type: 'string' },
                                 name: { type: 'string' }
                             }
-                        }
+                        },
+                        breed: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        created_at: { type: 'string', format: 'date-time' },
+                        updated_at: { type: 'string', format: 'date-time' },
                     }
                 },
                 404: {
-                    description: 'Pessoa não encontrada',
+                    description: 'Pet não encontrado',
                     type: 'object',
                     properties: {
                         message: { type: 'string' }
@@ -78,17 +83,109 @@ export async function petRoutes(fastify: FastifyInstance) {
         }
     });
 
+    fastify.get<{ Params: { id: string } }>('/', {
+        schema: {
+            description: 'Obtém todos os Pets',
+            tags: ['Pet'],
+            response: {
+                200: {
+                    description: 'Lista de pets encontradas',
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string' },
+                            name: { type: 'string' },
+                            color: { type: 'string' },
+                            size: { type: 'string' },
+                            age: { type: 'number' },
+                            gender: { type: 'string' },
+                            species: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string' },
+                                    name: { type: 'string' }
+                                }
+                            },
+                            breed: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string' },
+                                    name: { type: 'string' }
+                                }
+                            },
+                            created_at: { type: 'string', format: 'date-time' },
+                            updated_at: { type: 'string', format: 'date-time' },
+                        }
+                    }
+                },
+                404: {
+                    description: 'Pets não encontrados',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        handler: async (req, reply) => {
+            const { id } = req.params;
+
+            try {
+                const pet = await petUseCase.findAll();
+
+                return reply.send(pet);
+            } catch (error) {
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
     fastify.post<{ Body: CreatePetDTO }>('/', {
         schema: {
             description: 'Cadastra um novo PET',
             tags: ['Pet'],
             body: petJsonSchema,
             response: {
-                200: {
+                201: {
                     description: 'Pet criado com sucesso',
                     type: 'object',
                     properties: {
-                        message: { type: 'string' }
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        color: { type: 'string' },
+                        size: { type: 'string' },
+                        age: { type: 'number' },
+                        gender: { type: 'string' },
+                        species: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        breed: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        created_at: { type: 'string', format: 'date-time' },
+                        updated_at: { type: 'string', format: 'date-time' },
                     }
                 },
                 409: {
@@ -130,6 +227,101 @@ export async function petRoutes(fastify: FastifyInstance) {
                 const pet = await petUseCase.create(dataBody);
 
                 return reply.status(201).send(pet);
+            } catch (error) {
+        
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
+    fastify.put<{ Body: CreatePetDTO , Params: { id: string}}>('/:id', {
+        schema: {
+            description: 'Atualiza o pet pelo ID',
+            tags: ['Pet'],
+            body: petJsonSchema,
+            params: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string', description: 'ID do pet' }
+                },
+                required: ['id']
+            },
+            response: {
+                200: {
+                    description: 'Pet atualizado com sucesso',
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        color: { type: 'string' },
+                        size: { type: 'string' },
+                        age: { type: 'number' },
+                        gender: { type: 'string' },
+                        species: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        breed: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        created_at: { type: 'string', format: 'date-time' },
+                        updated_at: { type: 'string', format: 'date-time' },
+                    }
+                },
+                409: {
+                    description: 'Erro de conflito',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                422: {
+                    description: 'Erro de validação',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        preHandler: async (req, reply) => {
+            const result = PetSchema.safeParse(req.body);
+        
+            if (!result.success) {
+                return reply.status(422).send({ message: formatZodError(result.error) });
+            }
+        
+            req.body = result.data;
+        },
+        handler: async (req, reply) => {
+            const { id } = req.params;
+            
+            const dataBody = {...req.body, id: id}
+        
+            try {
+                const breed = await petUseCase.update(dataBody);
+
+                return reply.status(200).send(breed);
             } catch (error) {
         
                 if (error instanceof HttpError) {

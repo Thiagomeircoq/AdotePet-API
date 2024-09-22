@@ -1,5 +1,5 @@
 import { prisma } from "../../database/prisma-client";
-import { CreatePetDTO, PetDTO, PetRepository } from "../../interface/pet/pet.interface";
+import { CreatePetDTO, PetDTO, PetRepository, UpdatePetDTO } from "../../interface/pet/pet.interface";
 
 class PetRepositoryPrisma implements PetRepository {
 
@@ -7,15 +7,16 @@ class PetRepositoryPrisma implements PetRepository {
         const result = await prisma.tbpets.create({
             data: {
                 name: data.name,
-                species_id: data.species,
+                species_id: data.specie_id,
                 color: data.color,
                 size: data.size,
-                breed_id: data.breed,
+                breed_id: data.breed_id,
                 age: data.age,
                 gender: data.gender
             },
             include: {
                 species: true,
+                breed: true
             }
         });
 
@@ -28,11 +29,47 @@ class PetRepositoryPrisma implements PetRepository {
                 id: id
             },
             include: {
-                species: true
+                species: true,
+                breed: true
             }
         });
 
         return result || null;
+    }
+
+    async findAll(): Promise<PetDTO[]> {
+        const results = await prisma.tbpets.findMany({
+            include: {
+                species: true,
+                breed: true
+            },
+        });
+
+        return results;
+    }
+
+    async update(data: UpdatePetDTO): Promise<PetDTO> {
+        const result = await prisma.tbpets.update({
+            where: {
+                id: data.id
+            },
+            data: {
+                name: data.name,
+                species_id: data.specie_id,
+                color: data.color,
+                size: data.size,
+                breed_id: data.breed_id,
+                age: data.age,
+                gender: data.gender
+
+            },
+            include: {
+                species: true,
+                breed: true
+            },
+        });
+
+        return result;
     }
 
     async delete(id: string): Promise<void> {
