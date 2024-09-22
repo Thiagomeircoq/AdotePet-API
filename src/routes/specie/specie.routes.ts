@@ -178,6 +178,81 @@ export async function specieRoutes(fastify: FastifyInstance) {
         }
     });
 
+    fastify.put<{ Body: CreateSpecieDTO , Params: { id: string}}>('/:id', {
+        schema: {
+            description: 'Atualiza uma nova Espécie pelo ID',
+            tags: ['Espécie'],
+            body: specieJsonSchema,
+            params: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string', description: 'ID da espécie' }
+                },
+                required: ['id']
+            },
+            response: {
+                200: {
+                    description: 'Espécie atualizada com sucesso',
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                    }
+                },
+                409: {
+                    description: 'Erro de conflito',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                422: {
+                    description: 'Erro de validação',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        preHandler: async (req, reply) => {
+            const result = SpecieSchema.safeParse(req.body);
+        
+            if (!result.success) {
+                return reply.status(422).send({ message: formatZodError(result.error) });
+            }
+        
+            req.body = result.data;
+        },
+        handler: async (req, reply) => {
+            const { id } = req.params;
+            
+            const dataBody = {...req.body, id: id}
+        
+            try {
+                const specie = await specieUseCase.update(dataBody);
+
+                return reply.status(200).send(specie);
+            } catch (error) {
+        
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
     fastify.delete<{ Params: { id: string } }>('/:id', {
         schema: {
             description: 'Deleta uma espécie pelo ID',

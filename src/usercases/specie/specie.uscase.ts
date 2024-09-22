@@ -1,5 +1,5 @@
 import { HttpError } from "../../errors/HttpError";
-import { CreateSpecieDTO, SpecieRepository } from "../../interface/specie/specie.interface";
+import { CreateSpecieDTO, SpecieRepository, UpdateSpecieDTO } from "../../interface/specie/specie.interface";
 import { SpecieRepositoryPrisma } from "../../repositories/specie/specie.repository";
 
 class SpecieUseCase {
@@ -46,6 +46,14 @@ class SpecieUseCase {
         await this.specieRepository.delete(id);
 
         return { message: 'Specie successfully deleted' };
+    }
+
+    async update(data: UpdateSpecieDTO) {
+        await this.findById(data.id);
+
+        const person = await this.specieRepository.update(data);
+
+        return person;
     }
 
 }

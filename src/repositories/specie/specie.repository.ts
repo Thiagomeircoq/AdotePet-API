@@ -1,5 +1,5 @@
 import { prisma } from "../../database/prisma-client";
-import { CreateSpecieDTO, SpecieDTO, SpecieRepository } from "../../interface/specie/specie.interface";
+import { CreateSpecieDTO, SpecieDTO, SpecieRepository, UpdateSpecieDTO } from "../../interface/specie/specie.interface";
 
 class SpecieRepositoryPrisma implements SpecieRepository {
 
@@ -25,6 +25,19 @@ class SpecieRepositoryPrisma implements SpecieRepository {
         });
 
         return result || null;
+    }
+
+    async update(data: UpdateSpecieDTO): Promise<SpecieDTO> {
+        const result = await prisma.tbspecies.update({
+            where: {
+                id: data.id
+            },
+            data: {
+                name: data.name
+            },
+        });
+
+        return result;
     }
 
     async delete(id: string): Promise<void> {
