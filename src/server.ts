@@ -4,6 +4,7 @@ import { petRoutes } from "./routes/pet/pet.routes";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { specieRoutes } from "./routes/specie/specie.routes";
+import { breedRoutes } from "./routes/breed/breed.routes";
 
 const app: FastifyInstance = Fastify({ logger: true });
 
@@ -44,6 +45,10 @@ app.register(petRoutes, {
 
 app.register(specieRoutes, {
     prefix: "/specie",
+});
+
+app.register(breedRoutes, {
+    prefix: "/breed",
 });
 
 app.setErrorHandler((error, request, reply) => {
