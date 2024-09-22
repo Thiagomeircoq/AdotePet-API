@@ -10,7 +10,10 @@ export interface PetDTO {
     };
     size: Size;
     age: number;
-    breed?: string | null;
+    breed?: {
+        id: string;
+        name: string;
+    } | null;
     gender: Gender;
     created_at: Date;
     updated_at: Date;
@@ -18,26 +21,29 @@ export interface PetDTO {
 
 export interface CreatePetDTO {
     name: string;
-    species: string;
+    specie_id: string;
     color: Color;
     size: Size;
     age: number;
-    breed?: string;
+    breed_id?: string;
     gender: Gender;
 }
 
 export interface UpdatePetDTO {
-    name?: string;
-    species?: string;
-    color?: Color;
-    size?: Size;
-    breed?: string;
-    age?: number;
-    gender?: Gender;
+    id: string;
+    name: string;
+    specie_id: string;
+    color: Color;
+    size: Size;
+    breed_id?: string;
+    age: number;
+    gender: Gender;
 }
 
 export interface PetRepository {
-    create(data: CreatePetDTO): Promise<PetDTO>;
     findById(id: string): Promise<PetDTO | null>;
+    findAll(): Promise<PetDTO[]>;
+    create(data: CreatePetDTO): Promise<PetDTO>;
+    update(data: UpdatePetDTO): Promise<PetDTO>;
     delete(id: string): Promise<void>;
 }

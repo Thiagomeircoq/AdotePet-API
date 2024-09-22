@@ -40,6 +40,28 @@ class BreedRepositoryPrisma implements BreedRepository {
         return result || null;
     }
 
+    async findAllBySpecieId(specie_id: string): Promise<BreedDTO[]> {
+        const results = await prisma.tbbreed.findMany({
+            where: {
+                species_id: specie_id
+            },
+            include: {
+                species: true,
+            },
+        });
+
+        return results;
+    }
+
+    async belongsToSpecies(breed_id: string, specie_id: string): Promise<boolean> {
+        const breed = await prisma.tbbreed.findUnique({
+            where: { id: breed_id },
+            select: { species_id: true }
+        });
+
+        return breed?.species_id === specie_id;
+    }
+
     async update(data: UpdateBreedDTO): Promise<BreedDTO> {
         const result = await prisma.tbbreed.update({
             where: {

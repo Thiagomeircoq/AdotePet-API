@@ -4,8 +4,8 @@ import zodToJsonSchema from "zod-to-json-schema";
 
 export const PetSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    species: z.string().min(1, { message: "Species is required" }),
-    breed: z.string().min(1, { message: "Breed is required" }),
+    specie_id: z.string().min(1, { message: "Species is required" }),
+    breed_id: z.string().min(1, { message: "Breed is required" }).optional(),
     color: z.nativeEnum(Color, { message: "Invalid color" }),
     size: z.nativeEnum(Size, { message: "Invalid size" }),
     age: z

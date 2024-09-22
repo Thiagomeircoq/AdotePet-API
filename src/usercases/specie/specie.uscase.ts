@@ -51,9 +51,9 @@ class SpecieUseCase {
     async update(data: UpdateSpecieDTO) {
         await this.findById(data.id);
 
-        const person = await this.specieRepository.update(data);
+        const pet = await this.specieRepository.update(data);
 
-        return person;
+        return pet;
     }
 
 }
