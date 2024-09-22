@@ -3,7 +3,7 @@ import cors from '@fastify/cors';
 import { petRoutes } from "./routes/pet/pet.routes";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
-import { specieRoutes } from "./routes/specie/pet.routes";
+import { specieRoutes } from "./routes/specie/specie.routes";
 
 const app: FastifyInstance = Fastify({ logger: true });
 

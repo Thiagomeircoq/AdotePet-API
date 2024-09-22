@@ -15,4 +15,5 @@ export interface SpecieRepository {
     create(data: CreateSpecieDTO): Promise<SpecieDTO>;
     findById(id: string): Promise<SpecieDTO | null>;
     delete(id: string): Promise<void>;
+    findAll(): Promise<SpecieDTO[]>;
 }

@@ -21,6 +21,15 @@ class SpecieUseCase {
         return specie;
     }
 
+    async findAll() {
+        const species = await this.specieRepository.findAll();
+
+        if (!species)
+            throw new HttpError({ code: 404, message: 'No species found.' });
+
+        return species;
+    }
+
     async create(data: CreateSpecieDTO) {
         const { name } = data;
 

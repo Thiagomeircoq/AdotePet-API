@@ -8,6 +8,55 @@ import { specieJsonSchema, SpecieSchema } from "../../schemas/specie/specie.sche
 export async function specieRoutes(fastify: FastifyInstance) {
     const specieUseCase = new SpecieUseCase();
 
+    fastify.get('/', {
+        schema: {
+            description: 'Obtém todas as Espécies',
+            tags: ['Specie'],
+            response: {
+                200: {
+                    description: 'Lista de espécies encontradas',
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string' },
+                            name: { type: 'string' },
+                        }
+                    }
+                },
+                404: {
+                    description: 'Espécie não encontrada',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        handler: async (req, reply) => {
+            try {
+                const species = await specieUseCase.findAll();
+
+                return reply.send(species);
+            } catch (error) {
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
     fastify.get<{ Params: { id: string } }>('/:id', {
         schema: {
             description: 'Obtém uma Espécie pelo ID',

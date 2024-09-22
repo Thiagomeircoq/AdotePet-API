@@ -13,6 +13,10 @@ class SpecieRepositoryPrisma implements SpecieRepository {
         return result;
     }
 
+    async findAll(): Promise<SpecieDTO[]> {
+        return await prisma.tbspecies.findMany();
+    }
+
     async findById(id: string): Promise<SpecieDTO|null> {
         const result = await prisma.tbspecies.findUnique({
             where: {
