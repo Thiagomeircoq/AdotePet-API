@@ -11,7 +11,7 @@ export async function specieRoutes(fastify: FastifyInstance) {
     fastify.get('/', {
         schema: {
             description: 'Obtém todas as Espécies',
-            tags: ['Specie'],
+            tags: ['Espécie'],
             response: {
                 200: {
                     description: 'Lista de espécies encontradas',
@@ -60,7 +60,7 @@ export async function specieRoutes(fastify: FastifyInstance) {
     fastify.get<{ Params: { id: string } }>('/:id', {
         schema: {
             description: 'Obtém uma Espécie pelo ID',
-            tags: ['Specie'],
+            tags: ['Espécie'],
             params: {
                 type: 'object',
                 properties: {
@@ -115,7 +115,7 @@ export async function specieRoutes(fastify: FastifyInstance) {
     fastify.post<{ Body: CreateSpecieDTO }>('/', {
         schema: {
             description: 'Cadastra uma nova Espécie',
-            tags: ['Specie'],
+            tags: ['Espécie'],
             body: specieJsonSchema,
             response: {
                 201: {
@@ -167,6 +167,60 @@ export async function specieRoutes(fastify: FastifyInstance) {
                 return reply.status(201).send(specie);
             } catch (error) {
         
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
+    fastify.delete<{ Params: { id: string } }>('/:id', {
+        schema: {
+            description: 'Deleta uma espécie pelo ID',
+            tags: ['Espécie'],
+            params: {
+                type: 'object',
+                properties: {
+                    id: { type: 'string', description: 'ID da espécie' }
+                },
+                required: ['id']
+            },
+            response: {
+                200: {
+                    description: 'Espécie deletada com sucesso',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                404: {
+                    description: 'Espécie não encontrada',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        handler: async (req, reply) => {
+            const { id } = req.params;
+
+            try {
+                await specieUseCase.delete(id);
+
+                return reply.send({ message: 'Espécie deletada com sucesso' });
+            } catch (error) {
                 if (error instanceof HttpError) {
                     return reply.status(error.code).send({ message: error.message });
                 } else if (error instanceof Error) {
