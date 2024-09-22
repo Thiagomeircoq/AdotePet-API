@@ -9,7 +9,7 @@ class PetUseCase {
         this.petRepository = new PetRepositoryPrisma;
     }
 
-    async findById(id: number) {
+    async findById(id: string) {
         if (!id)
             throw new HttpError({ code: 400, message: 'Pet ID is required.' });
 
@@ -22,21 +22,22 @@ class PetUseCase {
     }
 
     async create(data: CreatePetDTO) {
-        const { name, species, color, size, age, gender } = data;
+        const { name, species, color, size, age, gender, breed } = data;
 
-        const person = await this.petRepository.create({
+        const pet = await this.petRepository.create({
             name,
             species,
             color,
             size,
             age,
-            gender
+            gender,
+            breed
         });
 
-        return person;
+        return pet;
     }
 
-    async delete(id: number) {
+    async delete(id: string) {
         await this.findById(id);
 
         await this.petRepository.delete(id);

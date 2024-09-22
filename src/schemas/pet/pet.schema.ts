@@ -1,23 +1,19 @@
 import { z } from "zod";
 import { Gender, Color, Size } from "@prisma/client";
+import zodToJsonSchema from "zod-to-json-schema";
 
 export const PetSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    species: z
-        .string()
-        .transform((val) => Number(val))
-        .refine((val) => !isNaN(val), { message: "Species must be a number" }),
-    color: z.enum(Object.values(Color) as [Color, ...Color[]], {
-        message: "Invalid color",
-    }),
-    size: z.enum(Object.values(Size) as [Size, ...Size[]], {
-        message: "Invalid size",
-    }),
+    species: z.string().min(1, { message: "Species is required" }),
+    breed: z.string().min(1, { message: "Breed is required" }),
+    color: z.nativeEnum(Color, { message: "Invalid color" }),
+    size: z.nativeEnum(Size, { message: "Invalid size" }),
     age: z
         .string()
         .transform((val) => Number(val))
         .refine((val) => !isNaN(val), { message: "Age must be a number" }),
-    gender: z.enum(Object.values(Gender) as [Gender, ...Gender[]], {
-        message: "Gender must be either 'M' or 'F'",
-    }),
+
+    gender: z.nativeEnum(Gender, { message: "Gender must be either 'M' or 'F'" }),
 });
+
+export const petJsonSchema = zodToJsonSchema(PetSchema);

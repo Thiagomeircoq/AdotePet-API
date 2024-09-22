@@ -3,6 +3,7 @@ import cors from '@fastify/cors';
 import { petRoutes } from "./routes/pet/pet.routes";
 import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
+import { specieRoutes } from "./routes/specie/pet.routes";
 
 const app: FastifyInstance = Fastify({ logger: true });
 
@@ -39,6 +40,10 @@ app.register(swaggerUi, {
 
 app.register(petRoutes, {
     prefix: "/pet",
+});
+
+app.register(specieRoutes, {
+    prefix: "/specie",
 });
 
 app.setErrorHandler((error, request, reply) => {

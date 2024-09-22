@@ -1,0 +1,44 @@
+import { HttpError } from "../../errors/HttpError";
+import { CreateSpecieDTO, SpecieRepository } from "../../interface/specie/specie.interface";
+import { SpecieRepositoryPrisma } from "../../repositories/specie/specie.repository";
+
+class SpecieUseCase {
+    private specieRepository: SpecieRepository
+
+    constructor() {
+        this.specieRepository = new SpecieRepositoryPrisma;
+    }
+
+    async findById(id: string) {
+        if (!id)
+            throw new HttpError({ code: 400, message: 'Specie ID is required.' });
+
+        const specie = await this.specieRepository.findById(id);
+
+        if (!specie)
+            throw new HttpError({ code: 404, message: `Specie with ID ${id} not found.` });
+
+        return specie;
+    }
+
+    async create(data: CreateSpecieDTO) {
+        const { name } = data;
+
+        const specie = await this.specieRepository.create({
+            name
+        });
+
+        return specie;
+    }
+
+    async delete(id: string) {
+        await this.findById(id);
+
+        await this.specieRepository.delete(id);
+
+        return { message: 'Specie successfully deleted' };
+    }
+
+}
+
+export { SpecieUseCase };

@@ -10,6 +10,7 @@ class PetRepositoryPrisma implements PetRepository {
                 species_id: data.species,
                 color: data.color,
                 size: data.size,
+                breed_id: data.breed,
                 age: data.age,
                 gender: data.gender
             },
@@ -21,7 +22,7 @@ class PetRepositoryPrisma implements PetRepository {
         return result;
     }
 
-    async findById(id: number): Promise<PetDTO|null> {
+    async findById(id: string): Promise<PetDTO|null> {
         const result = await prisma.tbpets.findUnique({
             where: {
                 id: id
@@ -34,7 +35,7 @@ class PetRepositoryPrisma implements PetRepository {
         return result || null;
     }
 
-    async delete(id: number): Promise<void> {
+    async delete(id: string): Promise<void> {
         await prisma.tbpets.delete({
             where: {
                 id: id

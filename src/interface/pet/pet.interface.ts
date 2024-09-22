@@ -1,15 +1,16 @@
 import { Gender, Color, Size } from '@prisma/client';
 
 export interface PetDTO {
-    id: number;
+    id: string;
     name: string;
     color: Color;
     species: {
-        id: number,
+        id: string,
         name: string;
     };
     size: Size;
     age: number;
+    breed?: string | null;
     gender: Gender;
     created_at: Date;
     updated_at: Date;
@@ -17,24 +18,26 @@ export interface PetDTO {
 
 export interface CreatePetDTO {
     name: string;
-    species: number;
+    species: string;
     color: Color;
     size: Size;
     age: number;
+    breed?: string;
     gender: Gender;
 }
 
 export interface UpdatePetDTO {
     name?: string;
-    species?: number;
+    species?: string;
     color?: Color;
     size?: Size;
+    breed?: string;
     age?: number;
     gender?: Gender;
 }
 
 export interface PetRepository {
     create(data: CreatePetDTO): Promise<PetDTO>;
-    findById(id: number): Promise<PetDTO | null>;
-    delete(id: number): Promise<void>;
+    findById(id: string): Promise<PetDTO | null>;
+    delete(id: string): Promise<void>;
 }
