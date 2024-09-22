@@ -1,7 +1,6 @@
 import { FastifyInstance } from "fastify";
 import { HttpError } from "../../errors/HttpError";
 import { CreatePetDTO } from "../../interface/pet/pet.interface";
-import fromZodError from 'zod-to-json-schema';
 import { petJsonSchema, PetSchema } from "../../schemas/pet/pet.schema";
 import { formatZodError } from "../../errors/ZoodError";
 import { PetUseCase } from "../../usercases/pet/pet.usecase";
