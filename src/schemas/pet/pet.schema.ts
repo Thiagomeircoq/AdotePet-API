@@ -14,6 +14,7 @@ export const PetSchema = z.object({
         .refine((val) => !isNaN(val), { message: "Age must be a number" }),
 
     gender: z.nativeEnum(Gender, { message: "Gender must be either 'M' or 'F'" }),
+    images: z.array(z.instanceof(File)).optional()
 });
 
 export const petJsonSchema = zodToJsonSchema(PetSchema);

@@ -4,6 +4,9 @@ import { CreatePetDTO } from "../../interface/pet/pet.interface";
 import { petJsonSchema, PetSchema } from "../../schemas/pet/pet.schema";
 import { formatZodError } from "../../errors/ZoodError";
 import { PetUseCase } from "../../usercases/pet/pet.usecase";
+import { parseMultipartData, saveFile } from "../../utils/formHandle";
+import path from 'path';
+import fs from 'fs';
 
 export async function petRoutes(fastify: FastifyInstance) {
     const petUseCase = new PetUseCase();
@@ -42,6 +45,15 @@ export async function petRoutes(fastify: FastifyInstance) {
                             properties: {
                                 id: { type: 'string' },
                                 name: { type: 'string' }
+                            }
+                        },
+                        images: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    image_url: { type: 'string' }
+                                }
                             }
                         },
                         created_at: { type: 'string', format: 'date-time' },
@@ -114,6 +126,15 @@ export async function petRoutes(fastify: FastifyInstance) {
                                     name: { type: 'string' }
                                 }
                             },
+                            images: {
+                                type: 'array',
+                                items: {
+                                    type: 'object',
+                                    properties: {
+                                        image_url: { type: 'string' }
+                                    }
+                                }
+                            },
                             created_at: { type: 'string', format: 'date-time' },
                             updated_at: { type: 'string', format: 'date-time' },
                         }
@@ -158,34 +179,52 @@ export async function petRoutes(fastify: FastifyInstance) {
         schema: {
             description: 'Cadastra um novo PET',
             tags: ['Pet'],
-            body: petJsonSchema,
+            consumes: ['multipart/form-data'],
             response: {
                 201: {
                     description: 'Pet criado com sucesso',
                     type: 'object',
                     properties: {
-                        id: { type: 'string' },
-                        name: { type: 'string' },
-                        color: { type: 'string' },
-                        size: { type: 'string' },
-                        age: { type: 'number' },
-                        gender: { type: 'string' },
-                        species: {
+                        message: { type: 'string' },
+                        pet: {
                             type: 'object',
                             properties: {
                                 id: { type: 'string' },
-                                name: { type: 'string' }
+                                name: { type: 'string' },
+                                species_id: { type: 'string' },
+                                breed_id: { type: 'string' },
+                                color: { type: 'string' },
+                                size: { type: 'string' },
+                                age: { type: 'number' },
+                                gender: { type: 'string' },
+                                created_at: { type: 'string', format: 'date-time' },
+                                updated_at: { type: 'string', format: 'date-time' },
+                                species: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        name: { type: 'string' }
+                                    }
+                                },
+                                breed: {
+                                    type: 'object',
+                                    properties: {
+                                        id: { type: 'string' },
+                                        name: { type: 'string' },
+                                        species_id: { type: 'string' }
+                                    }
+                                },
+                                images: {
+                                    type: 'array',
+                                    items: {
+                                        type: 'object',
+                                        properties: {
+                                            image_url: { type: 'string' }
+                                        }
+                                    }
+                                }
                             }
-                        },
-                        breed: {
-                            type: 'object',
-                            properties: {
-                                id: { type: 'string' },
-                                name: { type: 'string' }
-                            }
-                        },
-                        created_at: { type: 'string', format: 'date-time' },
-                        updated_at: { type: 'string', format: 'date-time' },
+                        }
                     }
                 },
                 409: {
@@ -211,22 +250,45 @@ export async function petRoutes(fastify: FastifyInstance) {
                 }
             }
         },
-        preHandler: async (req, reply) => {
-            const result = PetSchema.safeParse(req.body);
-        
-            if (!result.success) {
-                return reply.status(422).send({ message: formatZodError(result.error) });
-            }
-        
-            req.body = result.data;
-        },
         handler: async (req, reply) => {
-            const dataBody = req.body;
-        
             try {
-                const pet = await petUseCase.create(dataBody);
+                const { fields, files } = await parseMultipartData(req);
 
-                return reply.status(201).send(pet);
+                const uploadPath = path.join(process.cwd(), 'src', 'uploads');
+                if (!fs.existsSync(uploadPath)) {
+                    fs.mkdirSync(uploadPath, { recursive: true });
+                }
+
+                const petData = {
+                    name: fields.name,
+                    specie_id: fields.specie_id,
+                    breed_id: fields.breed_id,
+                    color: fields.color,
+                    size: fields.size,
+                    age: parseInt(fields.age, 10),
+                    gender: fields.gender,
+                };
+
+                const pet = await petUseCase.create(petData);
+
+                const savedFiles = [];
+                for (const file of files) {
+                    const filePath = await saveFile(file, uploadPath);
+                    savedFiles.push({ path: filePath });
+
+                    await petUseCase.saveImage({
+                        pet_id: pet.id,
+                        image_url: filePath,
+                    });
+                }
+
+                return reply.status(201).send({
+                    message: 'Pet cadastrado com sucesso!',
+                    pet: {
+                        ...pet,
+                        images: savedFiles
+                    }
+                });
             } catch (error) {
         
                 if (error instanceof HttpError) {

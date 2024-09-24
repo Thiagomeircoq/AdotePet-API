@@ -5,8 +5,11 @@ import swagger from "@fastify/swagger";
 import swaggerUi from "@fastify/swagger-ui";
 import { specieRoutes } from "./routes/specie/specie.routes";
 import { breedRoutes } from "./routes/breed/breed.routes";
+import fastifyMultipart from '@fastify/multipart';
 
 const app: FastifyInstance = Fastify({ logger: true });
+
+app.register(fastifyMultipart);
 
 app.register(cors, {
     origin: "*",
@@ -52,7 +55,15 @@ app.register(breedRoutes, {
 });
 
 app.setErrorHandler((error, request, reply) => {
+    console.log(error)
+    
     reply.status(500).send({ message: 'Internal Server Error' });
 });
 
-app.listen({ port: 3100, host: '0.0.0.0' }, () => console.log("Server is running on port 3100"));
+app.listen({ port: 3100, host: '0.0.0.0' }, (err) => {
+    if (err) {
+        app.log.error(err);
+        process.exit(1);
+    }
+    console.log('Server is running on port 3100');
+});
