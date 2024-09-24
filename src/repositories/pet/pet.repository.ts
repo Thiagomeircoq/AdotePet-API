@@ -1,5 +1,5 @@
 import { prisma } from "../../database/prisma-client";
-import { CreatePetDTO, PetDTO, PetRepository, UpdatePetDTO } from "../../interface/pet/pet.interface";
+import { CreatePetDTO, CreatePetImageDTO, PetDTO, PetImageDTO, PetRepository, UpdatePetDTO } from "../../interface/pet/pet.interface";
 
 class PetRepositoryPrisma implements PetRepository {
 
@@ -16,7 +16,8 @@ class PetRepositoryPrisma implements PetRepository {
             },
             include: {
                 species: true,
-                breed: true
+                breed: true,
+                images: true
             }
         });
 
@@ -30,7 +31,8 @@ class PetRepositoryPrisma implements PetRepository {
             },
             include: {
                 species: true,
-                breed: true
+                breed: true,
+                images: true
             }
         });
 
@@ -41,7 +43,8 @@ class PetRepositoryPrisma implements PetRepository {
         const results = await prisma.tbpets.findMany({
             include: {
                 species: true,
-                breed: true
+                breed: true,
+                images: true
             },
         });
 
@@ -65,8 +68,21 @@ class PetRepositoryPrisma implements PetRepository {
             },
             include: {
                 species: true,
-                breed: true
+                breed: true,
+                images: true
             },
+        });
+
+        return result;
+    }
+
+    async saveImage(data: CreatePetImageDTO): Promise<PetImageDTO>
+    {
+        const result = await prisma.tbpet_images.create({
+            data: {
+                pet_id: data.pet_id,
+                image_url: data.image_url
+            }
         });
 
         return result;

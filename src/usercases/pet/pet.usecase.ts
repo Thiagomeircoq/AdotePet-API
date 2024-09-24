@@ -1,4 +1,4 @@
-import { CreatePetDTO, PetRepository, UpdatePetDTO } from "../../interface/pet/pet.interface";
+import { CreatePetDTO, CreatePetImageDTO, PetRepository, UpdatePetDTO } from "../../interface/pet/pet.interface";
 import { PetRepositoryPrisma } from "../../repositories/pet/pet.repository";
 import { HttpError } from "../../errors/HttpError";
 import { BreedRepository } from "../../interface/breed/breed.interface";
@@ -88,6 +88,14 @@ class PetUseCase {
         }
     
         return await this.petRepository.update(data);
+    }
+
+    async saveImage(data: CreatePetImageDTO) {
+        const { pet_id } = data;
+
+        await this.findById(pet_id);
+
+        return await this.petRepository.saveImage(data);
     }
 
     async delete(id: string) {
