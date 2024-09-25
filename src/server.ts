@@ -6,6 +6,12 @@ import swaggerUi from "@fastify/swagger-ui";
 import { specieRoutes } from "./routes/specie/specie.routes";
 import { breedRoutes } from "./routes/breed/breed.routes";
 import fastifyMultipart from '@fastify/multipart';
+import fastifyStatic from '@fastify/static';
+import path from 'path';
+
+const uploadPath = path.join(process.cwd(), 'src', 'uploads');
+
+console.log('Servindo arquivos estáticos de:', uploadPath);
 
 const app: FastifyInstance = Fastify({ logger: true });
 
@@ -15,6 +21,13 @@ app.register(cors, {
     origin: "*",
     methods: ["GET", "POST", "PUT", "DELETE"],
     allowedHeaders: ["Content-Type", "Authorization"]
+});
+
+app.register(fastifyStatic, {
+    root: uploadPath,
+    prefix: '/uploads/',
+    list: true,
+    index: false,
 });
 
 app.register(swagger, {
@@ -55,8 +68,7 @@ app.register(breedRoutes, {
 });
 
 app.setErrorHandler((error, request, reply) => {
-    console.log(error)
-    
+    console.log(error);
     reply.status(500).send({ message: 'Internal Server Error' });
 });
 

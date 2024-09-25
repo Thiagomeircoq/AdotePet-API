@@ -255,6 +255,9 @@ export async function petRoutes(fastify: FastifyInstance) {
             try {
                 const { fields, files } = await parseMultipartData(req);
 
+                const baseUploadsUrl = process.env.UPLOADS_URL;
+                const baseUrl = process.env.BASE_URL;
+
                 const uploadPath = path.join(process.cwd(), 'src', 'uploads');
                 if (!fs.existsSync(uploadPath)) {
                     fs.mkdirSync(uploadPath, { recursive: true });
@@ -293,8 +296,10 @@ export async function petRoutes(fastify: FastifyInstance) {
                     const fileExtension = path.extname(file.filename);
 
                     const finalFileName = `${encryptedUrl}${fileExtension}`;
-                
-                    const filePath = await saveFile({ ...file, filename: finalFileName }, uploadPath);
+                    
+                    await saveFile({ ...file, filename: finalFileName }, uploadPath);
+
+                    const filePath = `${baseUrl}${baseUploadsUrl}/${finalFileName}`;
                     
                     savedFiles.push({ image_url: filePath });
                 

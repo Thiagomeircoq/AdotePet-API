@@ -31,21 +31,21 @@ class PetUseCase {
 
     async findAll() {
         const pets = await this.petRepository.findAll();
-
-        if (!pets)
+    
+        if (!pets) {
             throw new HttpError({ code: 404, message: 'No Pets found.' });
-
+        }
+    
         const baseUploadsUrl = process.env.UPLOADS_URL;
         const baseUrl = process.env.BASE_URL;
-
+    
         const petsWithImages = pets.map(pet => ({
             ...pet,
             images: pet.images.map(image => ({
-                image_url: `${baseUrl}/src/${baseUploadsUrl}/${image.image_url}`
+                image_url: `${baseUrl}${baseUploadsUrl}/${image.image_url}`
             })),
         }));
-
-
+    
         return petsWithImages;
     }
 
