@@ -7,6 +7,7 @@ export interface FileData {
     mimetype: string;
     encoding: string;
     buffer: Buffer;
+    size: number;
 }
 
 export interface ParsedData {
@@ -24,30 +25,35 @@ export async function parseMultipartData(req: FastifyRequest): Promise<ParsedDat
 
     for await (const part of parts) {
         if (part.file) {
-        const fileBuffer = await getFileBuffer(part);
-        files.push({
-            filename: part.filename,
-            mimetype: part.mimetype,
-            encoding: part.encoding,
-            buffer: fileBuffer,
-        });
+            const { buffer, size } = await getFileBuffer(part);
+            files.push({
+                filename: part.filename,
+                mimetype: part.mimetype,
+                encoding: part.encoding,
+                buffer,
+                size,
+            });
         } else {
-        fields[part.fieldname] = part.value;
+            fields[part.fieldname] = part.value;
         }
     }
 
-  return { fields, files };
+    return { fields, files };
 }
 
 /**
- * Função auxiliar para ler o conteúdo do arquivo enviado.
+ * Função auxiliar para ler o conteúdo do arquivo enviado e calcular o tamanho.
  */
-async function getFileBuffer(part: any): Promise<Buffer> {
+async function getFileBuffer(part: any): Promise<{ buffer: Buffer; size: number }> {
     const chunks: Buffer[] = [];
+    let totalSize = 0; // Inicializa o tamanho do arquivo
+
     for await (const chunk of part.file) {
         chunks.push(chunk);
+        totalSize += chunk.length; // Soma o tamanho de cada chunk
     }
-    return Buffer.concat(chunks);
+
+    return { buffer: Buffer.concat(chunks), size: totalSize };
 }
 
 /**

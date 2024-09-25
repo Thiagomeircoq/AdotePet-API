@@ -6,6 +6,7 @@ import { formatZodError } from "../../errors/ZoodError";
 import { PetUseCase } from "../../usercases/pet/pet.usecase";
 import { parseMultipartData, saveFile } from "../../utils/formHandle";
 import path from 'path';
+import crypto from 'crypto';
 import fs from 'fs';
 
 export async function petRoutes(fastify: FastifyInstance) {
@@ -259,6 +260,9 @@ export async function petRoutes(fastify: FastifyInstance) {
                     fs.mkdirSync(uploadPath, { recursive: true });
                 }
 
+                const allowedTypes = ['image/png', 'image/jpeg', 'application/octet-stream', 'image/jpg', 'image/jfif'];
+                const maxSize = 5 * 1024 * 1024;
+
                 const petData = {
                     name: fields.name,
                     specie_id: fields.specie_id,
@@ -273,12 +277,30 @@ export async function petRoutes(fastify: FastifyInstance) {
 
                 const savedFiles = [];
                 for (const file of files) {
-                    const filePath = await saveFile(file, uploadPath);
-                    savedFiles.push({ path: filePath });
+                    if (!allowedTypes.includes(file.mimetype)) {
+                        return reply.status(400).send({ message: `Tipo de arquivo não permitido: ${file.mimetype}. Permitido apenas PNG, JPG, JFIF.` });
+                    }
+                
+                    if (file.size > maxSize) {
+                        return reply.status(400).send({ message: `O arquivo ${file.filename} excede o tamanho máximo permitido de 5MB.` });
+                    }
 
+                    const encryptedUrl = crypto
+                        .createHash('sha256')
+                        .update(`${pet.id}-${file.filename}`)
+                        .digest('hex');
+
+                    const fileExtension = path.extname(file.filename);
+
+                    const finalFileName = `${encryptedUrl}${fileExtension}`;
+                
+                    const filePath = await saveFile({ ...file, filename: finalFileName }, uploadPath);
+                    
+                    savedFiles.push({ image_url: filePath });
+                
                     await petUseCase.saveImage({
                         pet_id: pet.id,
-                        image_url: filePath,
+                        image_url: finalFileName,
                     });
                 }
 
