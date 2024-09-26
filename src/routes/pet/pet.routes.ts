@@ -4,7 +4,7 @@ import { CreatePetDTO } from "../../interface/pet/pet.interface";
 import { petJsonSchema, PetSchema } from "../../schemas/pet/pet.schema";
 import { formatZodError } from "../../errors/ZoodError";
 import { PetUseCase } from "../../usercases/pet/pet.usecase";
-import { parseMultipartData, saveFile } from "../../utils/formHandle";
+import { getImageUrl, parseMultipartData, saveFile } from "../../utils/formHandle";
 import path from 'path';
 import crypto from 'crypto';
 import fs from 'fs';
@@ -255,9 +255,6 @@ export async function petRoutes(fastify: FastifyInstance) {
             try {
                 const { fields, files } = await parseMultipartData(req);
 
-                const baseUploadsUrl = process.env.UPLOADS_URL;
-                const baseUrl = process.env.BASE_URL;
-
                 const uploadPath = path.join(process.cwd(), 'src', 'uploads');
                 if (!fs.existsSync(uploadPath)) {
                     fs.mkdirSync(uploadPath, { recursive: true });
@@ -299,7 +296,7 @@ export async function petRoutes(fastify: FastifyInstance) {
                     
                     await saveFile({ ...file, filename: finalFileName }, uploadPath);
 
-                    const filePath = `${baseUrl}${baseUploadsUrl}/${finalFileName}`;
+                    const filePath = getImageUrl(finalFileName);
                     
                     savedFiles.push({ image_url: filePath });
                 

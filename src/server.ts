@@ -11,11 +11,13 @@ import path from 'path';
 
 const uploadPath = path.join(process.cwd(), 'src', 'uploads');
 
-console.log('Servindo arquivos estáticos de:', uploadPath);
-
 const app: FastifyInstance = Fastify({ logger: true });
 
-app.register(fastifyMultipart);
+app.register(fastifyMultipart, {
+    limits: {
+        fileSize: 25 * 1024 * 1024,
+    }
+});
 
 app.register(cors, {
     origin: "*",

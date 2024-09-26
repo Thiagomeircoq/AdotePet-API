@@ -5,6 +5,7 @@ import { BreedRepository } from "../../interface/breed/breed.interface";
 import { SpecieRepository } from "../../interface/specie/specie.interface";
 import { SpecieRepositoryPrisma } from "../../repositories/specie/specie.repository";
 import { BreedRepositoryPrisma } from "../../repositories/breed/breed.repository";
+import { getImageUrl } from "../../utils/formHandle";
 
 class PetUseCase {
     private petRepository: PetRepository
@@ -26,7 +27,12 @@ class PetUseCase {
         if (!pet)
             throw new HttpError({ code: 404, message: `Pet with ID ${id} not found.` });
 
-        return pet;
+        return {
+            ...pet,
+            images: pet.images.map(image => ({
+                image_url: getImageUrl(image.image_url)
+            })),
+        };
     }
 
     async findAll() {
@@ -36,13 +42,10 @@ class PetUseCase {
             throw new HttpError({ code: 404, message: 'No Pets found.' });
         }
     
-        const baseUploadsUrl = process.env.UPLOADS_URL;
-        const baseUrl = process.env.BASE_URL;
-    
         const petsWithImages = pets.map(pet => ({
             ...pet,
             images: pet.images.map(image => ({
-                image_url: `${baseUrl}${baseUploadsUrl}/${image.image_url}`
+                image_url: getImageUrl(image.image_url)
             })),
         }));
     
@@ -97,8 +100,15 @@ class PetUseCase {
                 throw new HttpError({ code: 400, message: `Breed with ID ${effectiveBreedId} does not belong to Species with ID ${specie_id}.` });
             }
         }
-    
-        return await this.petRepository.update(data);
+        
+        const pet = await this.petRepository.update(data);
+
+        return {
+            ...pet,
+            images: pet.images.map(image => ({
+                image_url: getImageUrl(image.image_url)
+            })),
+        };
     }
 
     async saveImage(data: CreatePetImageDTO) {
