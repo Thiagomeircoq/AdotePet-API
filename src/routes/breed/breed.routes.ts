@@ -191,6 +191,81 @@ export async function breedRoutes(fastify: FastifyInstance) {
         }
     });
 
+    fastify.post<{ Body: { species: string[] } }>('/species', {
+        schema: {
+            description: 'Obtém as Raças pelas IDs das espécies',
+            tags: ['Raça'],
+            body: {
+                type: 'object',
+                properties: {
+                    species: {
+                        type: 'array',
+                        items: { type: 'string' }
+                    }
+                },
+                required: ['species']
+            },
+            response: {
+                200: {
+                    description: 'Lista de raças encontradas',
+                    type: 'array',
+                    items: {
+                        type: 'object',
+                        properties: {
+                            id: { type: 'string' },
+                            name: { type: 'string' },
+                            species: {
+                                type: 'object',
+                                properties: {
+                                    id: { type: 'string' },
+                                    name: { type: 'string' }
+                                }
+                            }
+                        }
+                    }
+                },
+                404: {
+                    description: 'Raça não encontrada',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        handler: async (req, reply) => {
+            const { species } = req.body;
+    
+            try {
+                const breedPromises = species.map(specieId => breedUseCase.findAllBySpecieId(specieId));
+                const breedResults = await Promise.all(breedPromises);
+    
+                const foundBreeds = breedResults.flat().filter(Boolean);
+    
+                if (foundBreeds.length > 0) {
+                    return reply.send(foundBreeds);
+                } else {
+                    return reply.status(404).send({ message: 'Nenhuma raça encontrada para as espécies fornecidas' });
+                }
+            } catch (error) {
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
     fastify.post<{ Body: CreateBreedDTO }>('/', {
         schema: {
             description: 'Cadastra uma nova raça',
