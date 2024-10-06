@@ -98,6 +98,19 @@ class PetRepositoryPrisma implements PetRepository {
         return;
     }
 
+    async findWithFilters(filters: Record<string, any>): Promise<PetDTO[]> {
+        const pets = await prisma.tbpets.findMany({
+            where: filters,
+            include: {
+                species: true,
+                breed: true,
+                images: true
+            },
+        });
+    
+        return pets;
+    }
+
 }
 
 export { PetRepositoryPrisma };

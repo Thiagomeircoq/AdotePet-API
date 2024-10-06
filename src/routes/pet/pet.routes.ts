@@ -326,6 +326,85 @@ export async function petRoutes(fastify: FastifyInstance) {
         }
     });
 
+    fastify.post('/filtered', {
+        schema: {
+            description: 'Obtém um pet pelo filtro',
+            tags: ['Pet'],
+            response: {
+                200: {
+                    description: 'Pet encontrado',
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        color: { type: 'string' },
+                        size: { type: 'string' },
+                        age: { type: 'number' },
+                        gender: { type: 'string' },
+                        species: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        breed: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        images: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    image_url: { type: 'string' }
+                                }
+                            }
+                        },
+                        created_at: { type: 'string', format: 'date-time' },
+                        updated_at: { type: 'string', format: 'date-time' },
+                    }
+                },
+                404: {
+                    description: 'Pet não encontrado',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        handler: async (req, reply) => {
+            const result = req.body;
+
+            try {
+                const petsFiltered = await petUseCase.filterPets(result);
+
+                return reply.status(201).send(petsFiltered);
+                
+            } catch (error) {
+        
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
     fastify.put<{ Body: CreatePetDTO , Params: { id: string}}>('/:id', {
         schema: {
             description: 'Atualiza o pet pelo ID',

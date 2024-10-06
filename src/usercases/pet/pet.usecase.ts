@@ -111,6 +111,49 @@ class PetUseCase {
         };
     }
 
+    async filterPets(filters: Record<string, any>) {
+        const { name, species, breeds, sizes, colors, gender } = filters;
+    
+        const filterConditions: Record<string, any> = {};
+    
+        if (name) {
+            filterConditions.name = { contains: name, mode: 'insensitive' };
+        }
+    
+        if (species && species.length) {
+            filterConditions.species_id = { in: species };
+        }
+    
+        if (breeds && breeds.length) {
+            filterConditions.breed_id = { in: breeds };
+        }
+    
+        if (sizes && sizes.length) {
+            filterConditions.size = { in: sizes };
+        }
+    
+        if (colors && colors.length) {
+            filterConditions.color = { in: colors };
+        }
+    
+        if (gender && gender.length) {
+            filterConditions.gender = { in: Array.isArray(gender) ? gender : [gender] };
+        }
+    
+        const filteredPets = await this.petRepository.findWithFilters(filterConditions);
+    
+        if (!filteredPets) return null;
+    
+        const petsWithImages = filteredPets.map(pet => ({
+            ...pet,
+            images: pet.images.map(image => ({
+                image_url: getImageUrl(image.image_url)
+            })),
+        }));
+    
+        return petsWithImages;
+    }
+
     async saveImage(data: CreatePetImageDTO) {
         const { pet_id } = data;
 
