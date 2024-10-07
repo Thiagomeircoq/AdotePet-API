@@ -60,4 +60,5 @@ export interface PetRepository {
     create(data: CreatePetDTO): Promise<PetDTO>;
     update(data: UpdatePetDTO): Promise<PetDTO>;
     delete(id: string): Promise<void>;
+    findWithFilters(filters: Record<string, any>): Promise<PetDTO[] | null>;
 }

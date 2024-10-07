@@ -4,8 +4,9 @@ import { CreatePetDTO } from "../../interface/pet/pet.interface";
 import { petJsonSchema, PetSchema } from "../../schemas/pet/pet.schema";
 import { formatZodError } from "../../errors/ZoodError";
 import { PetUseCase } from "../../usercases/pet/pet.usecase";
-import { parseMultipartData, saveFile } from "../../utils/formHandle";
+import { getImageUrl, parseMultipartData, saveFile } from "../../utils/formHandle";
 import path from 'path';
+import crypto from 'crypto';
 import fs from 'fs';
 
 export async function petRoutes(fastify: FastifyInstance) {
@@ -259,6 +260,9 @@ export async function petRoutes(fastify: FastifyInstance) {
                     fs.mkdirSync(uploadPath, { recursive: true });
                 }
 
+                const allowedTypes = ['image/png', 'image/jpeg', 'application/octet-stream', 'image/jpg', 'image/jfif'];
+                const maxSize = 5 * 1024 * 1024;
+
                 const petData = {
                     name: fields.name,
                     specie_id: fields.specie_id,
@@ -273,12 +277,32 @@ export async function petRoutes(fastify: FastifyInstance) {
 
                 const savedFiles = [];
                 for (const file of files) {
-                    const filePath = await saveFile(file, uploadPath);
-                    savedFiles.push({ path: filePath });
+                    if (!allowedTypes.includes(file.mimetype)) {
+                        return reply.status(400).send({ message: `Tipo de arquivo não permitido: ${file.mimetype}. Permitido apenas PNG, JPG, JFIF.` });
+                    }
+                
+                    if (file.size > maxSize) {
+                        return reply.status(400).send({ message: `O arquivo ${file.filename} excede o tamanho máximo permitido de 5MB.` });
+                    }
 
+                    const encryptedUrl = crypto
+                        .createHash('sha256')
+                        .update(`${pet.id}-${file.filename}`)
+                        .digest('hex');
+
+                    const fileExtension = path.extname(file.filename);
+
+                    const finalFileName = `${encryptedUrl}${fileExtension}`;
+                    
+                    await saveFile({ ...file, filename: finalFileName }, uploadPath);
+
+                    const filePath = getImageUrl(finalFileName);
+                    
+                    savedFiles.push({ image_url: filePath });
+                
                     await petUseCase.saveImage({
                         pet_id: pet.id,
-                        image_url: filePath,
+                        image_url: finalFileName,
                     });
                 }
 
@@ -289,6 +313,85 @@ export async function petRoutes(fastify: FastifyInstance) {
                         images: savedFiles
                     }
                 });
+            } catch (error) {
+        
+                if (error instanceof HttpError) {
+                    return reply.status(error.code).send({ message: error.message });
+                } else if (error instanceof Error) {
+                    return reply.status(500).send({ message: error.message });
+                } else {
+                    return reply.status(500).send({ message: 'Unknown error occurred' });
+                }
+            }
+        }
+    });
+
+    fastify.post('/filtered', {
+        schema: {
+            description: 'Obtém um pet pelo filtro',
+            tags: ['Pet'],
+            response: {
+                200: {
+                    description: 'Pet encontrado',
+                    type: 'object',
+                    properties: {
+                        id: { type: 'string' },
+                        name: { type: 'string' },
+                        color: { type: 'string' },
+                        size: { type: 'string' },
+                        age: { type: 'number' },
+                        gender: { type: 'string' },
+                        species: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        breed: {
+                            type: 'object',
+                            properties: {
+                                id: { type: 'string' },
+                                name: { type: 'string' }
+                            }
+                        },
+                        images: {
+                            type: 'array',
+                            items: {
+                                type: 'object',
+                                properties: {
+                                    image_url: { type: 'string' }
+                                }
+                            }
+                        },
+                        created_at: { type: 'string', format: 'date-time' },
+                        updated_at: { type: 'string', format: 'date-time' },
+                    }
+                },
+                404: {
+                    description: 'Pet não encontrado',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                },
+                500: {
+                    description: 'Erro interno do servidor',
+                    type: 'object',
+                    properties: {
+                        message: { type: 'string' }
+                    }
+                }
+            }
+        },
+        handler: async (req, reply) => {
+            const result = req.body;
+
+            try {
+                const petsFiltered = await petUseCase.filterPets(result);
+
+                return reply.status(201).send(petsFiltered);
+                
             } catch (error) {
         
                 if (error instanceof HttpError) {
