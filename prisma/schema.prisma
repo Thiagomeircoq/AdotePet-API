@@ -36,34 +36,34 @@ enum Size {
 }
 
 model tbpets {
-  id         String    @id @default(uuid())
-  name       String    @db.VarChar(50)
+  id         String         @id @default(uuid())
+  name       String         @db.VarChar(50)
   species_id String
   breed_id   String?
   color      Color
   size       Size
   age        Int
   gender     Gender
-  created_at DateTime  @default(now())
-  updated_at DateTime  @updatedAt
-  species    tbspecies @relation(fields: [species_id], references: [id])
-  breed      tbbreed?  @relation(fields: [breed_id], references: [id])
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+  species    tbspecies      @relation(fields: [species_id], references: [id])
+  breed      tbbreed?       @relation(fields: [breed_id], references: [id])
   images     tbpet_images[]
 }
 
 model tbpet_images {
-  id         String    @id @default(uuid())
+  id         String   @id @default(uuid())
   pet_id     String
-  image_url  String    @db.VarChar(255)
-  created_at DateTime  @default(now())
-  pet        tbpets    @relation(fields: [pet_id], references: [id], onDelete: Cascade)
+  image_url  String   @db.VarChar(255)
+  created_at DateTime @default(now())
+  pet        tbpets   @relation(fields: [pet_id], references: [id], onDelete: Cascade)
 }
 
 model tbspecies {
-  id      String    @id @default(uuid())
-  name    String    @db.VarChar(50)
-  pets    tbpets[]
-  breeds  tbbreed[]
+  id     String    @id @default(uuid())
+  name   String    @db.VarChar(50)
+  pets   tbpets[]
+  breeds tbbreed[]
 }
 
 model tbbreed {
@@ -72,4 +72,68 @@ model tbbreed {
   species_id String
   species    tbspecies @relation(fields: [species_id], references: [id])
   pets       tbpets[]
+}
+
+model tbuser {
+  id         String         @id @default(uuid())
+  email      String         @unique @db.VarChar(255)
+  password   String         @db.VarChar(255)
+  person_id  String?        @unique
+  person     tbperson?      @relation(fields: [person_id], references: [id], onDelete: Cascade)
+  user_roles tbuser_roles[]
+  created_at DateTime       @default(now())
+  updated_at DateTime       @updatedAt
+}
+
+model tbperson {
+  id              String   @id @default(uuid())
+  first_name      String   @db.VarChar(50)
+  last_name       String   @db.VarChar(50)
+  gender          Gender
+  birthdate       DateTime
+  profile_picture String?  @db.VarChar(255)
+  created_at      DateTime @default(now())
+  updated_at      DateTime @updatedAt
+  tbuser          tbuser?
+}
+
+model tbrole {
+  id          String               @id @default(uuid())
+  name        String               @unique @db.VarChar(50)
+  user_roles  tbuser_roles[]
+  permissions tbrole_permissions[]
+  created_at  DateTime             @default(now())
+  updated_at  DateTime             @updatedAt
+}
+
+model tbpermission {
+  id               String               @id @default(uuid())
+  name             String               @unique @db.VarChar(50)
+  role_permissions tbrole_permissions[]
+  created_at       DateTime             @default(now())
+  updated_at       DateTime             @updatedAt
+}
+
+model tbuser_roles {
+  user_id String
+  role_id String
+
+  user tbuser @relation(fields: [user_id], references: [id])
+  role tbrole @relation(fields: [role_id], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@id([user_id, role_id])
+}
+
+model tbrole_permissions {
+  role_id       String
+  permission_id String
+
+  role       tbrole       @relation(fields: [role_id], references: [id])
+  permission tbpermission @relation(fields: [permission_id], references: [id])
+
+  created_at DateTime @default(now())
+
+  @@id([role_id, permission_id])
 }
