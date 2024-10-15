@@ -24,31 +24,22 @@ class UserRepositoryPrisma implements UserRepository {
                     person_id: person.id,
                 }
             });
+
+            const roleToAdd = data.role_id || 'USER';
+
+            const role = await (roleToAdd === 'USER'
+                ? tx.tbrole.findUnique({ where: { name: 'USER' } })
+                : tx.tbrole.findUnique({ where: { id: roleToAdd } })
+            );
     
-            const rolesToAdd = data.roles && data.roles.length > 0 ? data.roles.map(role => role.role_id) : ['USER'];
-    
-            const roles = await Promise.all(rolesToAdd.map(async (role) => {
-                if (role === 'USER') {
-                    return tx.tbrole.findUnique({
-                        where: { name: role },
-                    });
-                } else {
-                    return tx.tbrole.findUnique({
-                        where: { id: role },
-                    });
-                }
-            }));
-    
-            await Promise.all(roles.map(role => {
-                if (role) {
-                    return tx.tbuser_roles.create({
-                        data: {
-                            user_id: user.id,
-                            role_id: role.id,
-                        }
-                    });
-                }
-            }));
+            if (role) {
+                await tx.tbuser_roles.create({
+                    data: {
+                        user_id: user.id,
+                        role_id: role.id,
+                    }
+                });
+            }
     
             return {
                 id: user.id,
