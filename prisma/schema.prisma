@@ -35,6 +35,12 @@ enum Size {
   GRANDE
 }
 
+enum UserStatus {
+  ACTIVE
+  INACTIVE
+  SUSPENDED
+}
+
 model tbpets {
   id         String         @id @default(uuid())
   name       String         @db.VarChar(50)
@@ -79,6 +85,7 @@ model tbuser {
   email      String         @unique @db.VarChar(255)
   password   String         @db.VarChar(255)
   person_id  String?        @unique
+  status     UserStatus     @default(ACTIVE)
   person     tbperson?      @relation(fields: [person_id], references: [id], onDelete: Cascade)
   user_roles tbuser_roles[]
   created_at DateTime       @default(now())

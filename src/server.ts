@@ -8,6 +8,7 @@ import { breedRoutes } from "./routes/breed/breed.routes";
 import fastifyMultipart from '@fastify/multipart';
 import fastifyStatic from '@fastify/static';
 import path from 'path';
+import { authRoutes } from "./routes/auth/auth.routes";
 
 const uploadPath = path.join(process.cwd(), 'src', 'uploads');
 
@@ -67,6 +68,10 @@ app.register(specieRoutes, {
 
 app.register(breedRoutes, {
     prefix: "/breed",
+});
+
+app.register(authRoutes, {
+    prefix: "/auth",
 });
 
 app.setErrorHandler((error, request, reply) => {
