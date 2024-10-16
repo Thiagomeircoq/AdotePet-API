@@ -29,10 +29,10 @@ export const RegisterUserSchema = z.object({
         .min(8, { message: "Password must be at least 8 characters long" }),
     password_confirm: z.string()
         .min(1, { message: "Password confirmation is required" }),
-    status: z.nativeEnum(UserStatus, { message: "The status must be ACTIVE" }),
-
+    status: z
+        .nativeEnum(UserStatus, { message: "The status must be ACTIVE" })
+        .optional(),
     role_id: z.string().optional(),
-
     person: z.object({
         first_name: z.string()
             .min(1, { message: "First name is required" }),
@@ -62,7 +62,7 @@ export const RegisterUserSchema = z.object({
         });
     }
 
-    if (data.status !== UserStatus.ACTIVE) {
+    if (data.status && data.status !== UserStatus.ACTIVE) {
         ctx.addIssue({
             code: z.ZodIssueCode.custom,
             message: "The status must be ACTIVE",
