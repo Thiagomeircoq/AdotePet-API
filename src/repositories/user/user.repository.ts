@@ -10,8 +10,10 @@ class UserRepositoryPrisma implements UserRepository {
                 data: {
                     first_name: data.person.first_name,
                     last_name: data.person.last_name,
+                    cpf: data.person.cpf,
                     gender: data.person.gender,
                     birthdate: new Date(data.person.birthdate),
+                    about: data.person.about,
                     profile_picture: data.person.profile_picture || null,
                 }
             });

@@ -22,7 +22,9 @@ export interface RegisterUserDTO {
         last_name: string;
         gender: Gender;
         birthdate: string;
+        cpf: string;
         profile_picture?: string;
+        about?: string;
     };
     roles?: { role_id: string }[];
     permissions?: string[];

@@ -1,22 +1,17 @@
 import { Gender, UserStatus } from '@prisma/client';
 import { z } from 'zod';
+import { validarCPF } from '../../utils/index';
 
 const passwordValidation = (password: string) => {
     const errors: string[] = [];
     if (!/[A-Z]/.test(password))
         errors.push("Password must contain at least one uppercase letter");
 
-    if (!/[a-z]/.test(password))
-        errors.push("Password must contain at least one lowercase letter");
-
     if (!/[0-9]/.test(password))
         errors.push("Password must contain at least one number");
 
     if (!/[^A-Za-z0-9]/.test(password))
         errors.push("Password must contain at least one special character");
-
-    if (/(012|123|234|345|456|567|678|789|890|abc|bcd|cde|def|efg|fgh|ghi|hij|ijk|jkl|klm|lmn|mno|nop|opq|pqr|qrs|rst|stu|tuv|uvw|vwx|wxy|xyz|ABC|BCD|CDE|DEF|EFG|FGH|GHI|HIJ|IJK|JKL|KLM|LMN|MNO|NOP|OPQ|PQR|QRS|RST|STU|UVW|VWX|WXY|XYZ)/.test(password))
-        errors.push("Password must not contain sequential characters");
 
     return errors;
 };
@@ -44,6 +39,10 @@ export const RegisterUserSchema = z.object({
                 message: "Birthdate must be a valid date in the format YYYY-MM-DD."
             }),
         profile_picture: z.string().optional(),
+        about: z.string().optional(),
+        cpf: z.string()
+            .min(11, { message: "CPF must be 11 characters long" })
+            .refine(validarCPF, { message: "Invalid CPF" })
     }),
 }).superRefine((data, ctx) => {
     const passwordErrors = passwordValidation(data.password);

@@ -98,6 +98,8 @@ model tbperson {
   last_name       String   @db.VarChar(50)
   gender          Gender
   birthdate       DateTime
+  cpf             String   @unique @db.VarChar(11)
+  about           String?  @db.Text
   profile_picture String?  @db.VarChar(255)
   created_at      DateTime @default(now())
   updated_at      DateTime @updatedAt
