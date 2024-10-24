@@ -251,6 +251,7 @@ export async function petRoutes(fastify: FastifyInstance) {
                 }
             }
         },
+        preHandler: [fastify.authenticate],
         handler: async (req, reply) => {
             try {
                 const { fields, files } = await parseMultipartData(req);

@@ -1,6 +1,7 @@
 import { Gender, UserStatus } from '@prisma/client';
 import { z } from 'zod';
 import { validarCPF } from '../../utils/index';
+import zodToJsonSchema from 'zod-to-json-schema';
 
 const passwordValidation = (password: string) => {
     const errors: string[] = [];
@@ -70,18 +71,4 @@ export const RegisterUserSchema = z.object({
     }
 });
 
-// export const PasswordUpdate = z.object({
-//     newPassword: z.string()
-//         .min(8, { message: "Password must be at least 8 characters long" }),
-//     password: z.string()
-//         .min(1, { message: "Old password is required" }),
-// }).superRefine((data, ctx) => {
-//     const passwordErrors = passwordValidation(data.newPassword);
-//     if (passwordErrors.length > 0) {
-//         passwordErrors.forEach(error => ctx.addIssue({
-//             code: z.ZodIssueCode.custom,
-//             message: error,
-//             path: ['newPassword']
-//         }));
-//     }
-// });
+export const registerUserJsonSchema = zodToJsonSchema(RegisterUserSchema);
