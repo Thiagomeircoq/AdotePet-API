@@ -83,8 +83,8 @@ export async function authRoutes(fastify: FastifyInstance) {
         
                     reply.setCookie('token', token, {
                         httpOnly: true,
-                        secure: true,
-                        sameSite: 'strict',
+                        secure: false,
+                        sameSite: 'lax',
                         maxAge: 3600,
                     }).status(201).send(user);
                 }
@@ -174,8 +174,8 @@ export async function authRoutes(fastify: FastifyInstance) {
         
                     reply.setCookie('token', token, {
                         httpOnly: true,
-                        secure: true,
-                        sameSite: 'strict',
+                        secure: false,
+                        sameSite: 'lax',
                         maxAge: 3600,
                     }).status(201).send(user);
                 }
