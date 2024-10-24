@@ -1,4 +1,7 @@
 import Fastify, { FastifyInstance } from "fastify";
+import fastifyJwt from '@fastify/jwt';
+import fastifyCookie from '@fastify/cookie';
+import dotenv from 'dotenv';
 import cors from '@fastify/cors';
 import { petRoutes } from "./routes/pet/pet.routes";
 import swagger from "@fastify/swagger";
@@ -10,9 +13,25 @@ import fastifyStatic from '@fastify/static';
 import path from 'path';
 import { authRoutes } from "./routes/auth/auth.routes";
 
+dotenv.config();
+
 const uploadPath = path.join(process.cwd(), 'src', 'uploads');
 
 const app: FastifyInstance = Fastify({ logger: true });
+
+app.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET || 'defaultSecretKey',
+    sign: {
+        expiresIn: '1h',
+    },
+    verify: {
+        algorithms: ['HS256'],
+    }
+});
+
+app.register(fastifyCookie, {
+    parseOptions: {}
+});
 
 app.register(fastifyMultipart, {
     limits: {
@@ -56,6 +75,14 @@ app.register(swaggerUi, {
     transformStaticCSP: (header) => header,
     transformSpecification: (swaggerObject, request, reply) => { return swaggerObject; },
     transformSpecificationClone: true
+});
+
+app.decorate("authenticate", async (request: any, reply: any) => {
+    try {
+        await request.jwtVerify();
+    } catch (err) {
+        return reply.status(401).send({ message: 'Token inválido ou expirado' });
+    }
 });
 
 app.register(petRoutes, {

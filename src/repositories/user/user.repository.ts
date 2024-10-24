@@ -1,5 +1,6 @@
 import { prisma } from "../../database/prisma-client";
-import { RegisterUserDTO, UserDTO, UserRepository } from "../../interface/user/user.interface";
+import { RegisterUserDTO } from "../../interface/auth/auth.interface";
+import { UserDTO, UserRepository } from "../../interface/user/user.interface";
 
 class UserRepositoryPrisma implements UserRepository {
 
