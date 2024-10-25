@@ -78,14 +78,15 @@ export async function authRoutes(fastify: FastifyInstance) {
                 if (user) {
                     const token = fastify.jwt.sign(
                         { id: user.id, email: user.email },
-                        { expiresIn: '1h' }
+                        { expiresIn: '7d' }
                     );
-        
+                
                     reply.setCookie('token', token, {
                         httpOnly: true,
                         secure: false,
                         sameSite: 'lax',
-                        maxAge: 3600,
+                        maxAge: 60 * 60 * 24 * 7,
+                        path: '/',
                     }).status(201).send(user);
                 }
             } catch (error) {
@@ -169,14 +170,15 @@ export async function authRoutes(fastify: FastifyInstance) {
                 if (user) {
                     const token = fastify.jwt.sign(
                         { id: user.id, email: user.email },
-                        { expiresIn: '1h' }
+                        { expiresIn: '7d' }
                     );
-        
+                
                     reply.setCookie('token', token, {
                         httpOnly: true,
                         secure: false,
                         sameSite: 'lax',
-                        maxAge: 3600,
+                        path: '/',
+                        maxAge: 60 * 60 * 24 * 7,
                     }).status(201).send(user);
                 }
             } catch (error) {
