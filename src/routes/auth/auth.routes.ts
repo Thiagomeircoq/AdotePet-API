@@ -15,26 +15,10 @@ export async function authRoutes(fastify: FastifyInstance) {
             tags: ['Auth'],
             body: registerUserJsonSchema,
             response: {
-                201: {
-                    description: 'Usuário criado com sucesso',
-                    type: 'object',
+                200: {
                     properties: {
-                        id: { type: 'string' },
-                        person: {
-                            type: 'object',
-                            properties: {
-                                id: { type: 'string' },
-                                first_name: { type: 'string' },
-                                last_name: { type: 'string' },
-                                gender: { type: 'string' },
-                                birthdate: { type: 'string', format: 'date' },
-                                cpf: { type: 'string' },
-                                about: { type: 'string' },
-                            },
-                        },
-                        created_at: { type: 'string', format: 'date-time' },
-                        updated_at: { type: 'string', format: 'date-time' },
-                    },
+                        token: { type: 'string' },
+                    }
                 },
                 409: {
                     description: 'Erro de conflito',
@@ -81,13 +65,7 @@ export async function authRoutes(fastify: FastifyInstance) {
                         { expiresIn: '7d' }
                     );
                 
-                    reply.setCookie('token', token, {
-                        httpOnly: true,
-                        secure: false,
-                        sameSite: 'lax',
-                        maxAge: 60 * 60 * 24 * 7,
-                        path: '/',
-                    }).status(201).send(user);
+                    return reply.status(200).send({ token: token });
                 }
             } catch (error) {
         
@@ -108,26 +86,10 @@ export async function authRoutes(fastify: FastifyInstance) {
             tags: ['Auth'],
             body: loginJsonSchema,
             response: {
-                201: {
-                    description: 'Login realizado com sucesso',
-                    type: 'object',
+                200: {
                     properties: {
-                        id: { type: 'string' },
-                        person: {
-                            type: 'object',
-                            properties: {
-                                id: { type: 'string' },
-                                first_name: { type: 'string' },
-                                last_name: { type: 'string' },
-                                gender: { type: 'string' },
-                                birthdate: { type: 'string', format: 'date' },
-                                cpf: { type: 'string' },
-                                about: { type: 'string' },
-                            },
-                        },
-                        created_at: { type: 'string', format: 'date-time' },
-                        updated_at: { type: 'string', format: 'date-time' },
-                    },
+                        token: { type: 'string' },
+                    }
                 },
                 409: {
                     description: 'Erro de conflito',
@@ -173,13 +135,7 @@ export async function authRoutes(fastify: FastifyInstance) {
                         { expiresIn: '7d' }
                     );
                 
-                    reply.setCookie('token', token, {
-                        httpOnly: true,
-                        secure: false,
-                        sameSite: 'lax',
-                        path: '/',
-                        maxAge: 60 * 60 * 24 * 7,
-                    }).status(201).send(user);
+                    return reply.status(200).send({ token: token });
                 }
             } catch (error) {
         
